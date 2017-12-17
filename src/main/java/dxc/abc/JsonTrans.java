@@ -1,6 +1,8 @@
 package dxc.abc;
 
 import java.awt.EventQueue;
+import java.awt.Toolkit;
+import java.awt.datatransfer.StringSelection;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.BufferedReader;
@@ -30,6 +32,7 @@ import org.xml.sax.InputSource;
 import com.jayway.jsonpath.Configuration;
 import com.jayway.jsonpath.DocumentContext;
 import com.jayway.jsonpath.JsonPath;
+import javax.swing.JLabel;
 
 public class JsonTrans extends JFrame {
 	class EditingPoint {
@@ -46,7 +49,7 @@ public class JsonTrans extends JFrame {
 	 */
 	
 	
-	private ArrayList<EditingPoint>EditingList = new ArrayList<EditingPoint>(); 
+	private ArrayList<EditingPoint>editingList = new ArrayList<EditingPoint>(); 
 	
 	public static void main(String[] args) {
 		EventQueue.invokeLater(new Runnable() {
@@ -71,6 +74,7 @@ public class JsonTrans extends JFrame {
 	 */
 	public JsonTrans() throws ClassNotFoundException, InstantiationException, IllegalAccessException,
 			UnsupportedLookAndFeelException {
+		setTitle("Json Transformer");
 		UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		setBounds(100, 100, 450, 300);
@@ -82,6 +86,7 @@ public class JsonTrans extends JFrame {
 		JButton btnNewButton = new JButton("Add transform rules");
 		btnNewButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
+				clearNotification();
 				JFileChooser transformRuleFile = fileChooser("Rule set", "xml");
 				transformRule = getFileContent(transformRuleFile);
 			}
@@ -92,6 +97,7 @@ public class JsonTrans extends JFrame {
 		JButton button = new JButton("Json");
 		button.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
+				clearNotification();
 				JFileChooser jsonFile = fileChooser("Digesting message", "json");
 				jsonStringOnProcess = getFileContent(jsonFile);
 			}
@@ -103,17 +109,45 @@ public class JsonTrans extends JFrame {
 		btnNewButton_1.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
 				TransformJsonMessage();
+				copyToClipBoard();
+				JLabel labelNotification = (JLabel) contentPane.getComponent(4);
+				labelNotification.setText("Result has been copy to clip board");
 			}
 		});
 		btnNewButton_1.setBounds(10, 120, 145, 43);
 		contentPane.add(btnNewButton_1);
+		
+		JLabel lblPhacsccom = new JLabel("pha5@csc.com");
+		lblPhacsccom.setBounds(338, 17, 86, 31);
+		contentPane.add(lblPhacsccom);
+		
+		JLabel lblNotification = new JLabel("Notification");
+		lblNotification.setBounds(10, 174, 414, 76);
+		contentPane.add(lblNotification);
 	}
 
+	protected void copyToClipBoard() {
+		// TODO Auto-generated method stub
+		Toolkit.getDefaultToolkit()
+        .getSystemClipboard()
+        .setContents(
+                new StringSelection(jsonStringOnProcess),
+                null
+        );
+		
+	}
+
+	private void clearNotification() {
+		JLabel labelNotification = (JLabel) contentPane.getComponent(4);
+		labelNotification.setText("");
+	}
+	
 	protected void TransformJsonMessage() {
 		// TODO Auto-generated method stub
 		getTransformRuleFromXML();
-		jsonEditByPath(jsonStringOnProcess,path,"17-12-2017");
-		
+		for (EditingPoint ep: editingList) {
+			jsonStringOnProcess = jsonEditByPath(jsonStringOnProcess,ep.path, ep.tagValue);
+		}
 	}
 
 	private void getTransformRuleFromXML() {
@@ -133,16 +167,16 @@ public class JsonTrans extends JFrame {
 	            
 	            if (nNode.getNodeType() == Node.ELEMENT_NODE) {
 	               Element eElement = (Element) nNode;
-	               System.out.println("Path : " 
-	                  + eElement
-	                  .getElementsByTagName("Path")
-	                  .item(0)
-	                  .getTextContent());
-	               System.out.println("Value Tag : " 
-	                  + eElement
-	                  .getElementsByTagName("ValueTag")
-	                  .item(0)
-	                  .getTextContent());
+	               EditingPoint ep = new EditingPoint();
+	               ep.path =  eElement
+	 	                  .getElementsByTagName("Path")
+		                  .item(0)
+		                  .getTextContent();
+	               ep.tagValue = eElement
+	 	                  .getElementsByTagName("ValueTag")
+		                  .item(0)
+		                  .getTextContent();
+	               editingList.add(ep);
 	            }
 	         }
 	      } catch (Exception e) {
@@ -186,11 +220,9 @@ public class JsonTrans extends JFrame {
 		return chooser;
 	}
 	
-	private void jsonEditByPath(String jsonString, String path, String tagValue) {
+	private String jsonEditByPath(String jsonString, String path, String tagValue) {
 		Configuration conf = Configuration.defaultConfiguration();
 		DocumentContext json = JsonPath.using(conf).parse(jsonString);
-	    System.out.println(json.set(path, tagValue).jsonString());
+	    return json.set(path, tagValue).jsonString();
 	}
-
-	
 }
