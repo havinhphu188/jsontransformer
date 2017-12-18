@@ -1,0 +1,18 @@
+<?xml version="1.0"?>
+<RuleSet>
+  <SetValueOnPath>
+      <Path>$.store.book[0].isbn</Path>
+      <ValueTag>17-12-2017</ValueTag>
+  </SetValueOnPath>
+  <SetValueOnPath>
+      <Path>$.store.book[1].isbn</Path>
+      <ValueTag>18-12-2017</ValueTag>
+  </SetValueOnPath>
+  <SetValueOnPath>
+      <Path>$.store.book[2].isbn</Path>
+      <ValueTag>19-12-2017</ValueTag>
+  </SetValueOnPath><SetValueOnPath>
+      <Path>$.store.book[3].isbn</Path>
+      <ValueTag>20-12-2017</ValueTag>
+  </SetValueOnPath>
+</RuleSet>

@@ -33,6 +33,8 @@ import com.jayway.jsonpath.Configuration;
 import com.jayway.jsonpath.DocumentContext;
 import com.jayway.jsonpath.JsonPath;
 import javax.swing.JLabel;
+import javax.swing.border.LineBorder;
+import java.awt.Color;
 
 public class JsonTrans extends JFrame {
 	class EditingPoint {
@@ -44,6 +46,8 @@ public class JsonTrans extends JFrame {
 	private String jsonStringOnProcess ; 
 	private String path = "$.store.book[2].isbn";
 	private String transformRule;
+	private JFileChooser jsonFile;
+	private JFileChooser transformRuleFile;
 	/**
 	 * Launch the application.
 	 */
@@ -82,48 +86,76 @@ public class JsonTrans extends JFrame {
 		contentPane.setBorder(new EmptyBorder(5, 5, 5, 5));
 		setContentPane(contentPane);
 		contentPane.setLayout(null);
-
-		JButton btnNewButton = new JButton("Add transform rules");
-		btnNewButton.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent arg0) {
-				clearNotification();
-				JFileChooser transformRuleFile = fileChooser("Rule set", "xml");
-				transformRule = getFileContent(transformRuleFile);
-			}
-		});
-		btnNewButton.setBounds(10, 11, 145, 43);
-		contentPane.add(btnNewButton);
-
-		JButton button = new JButton("Json");
-		button.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				clearNotification();
-				JFileChooser jsonFile = fileChooser("Digesting message", "json");
-				jsonStringOnProcess = getFileContent(jsonFile);
-			}
-		});
-		button.setBounds(10, 66, 145, 43);
-		contentPane.add(button);
 		
 		JButton btnNewButton_1 = new JButton("Execute");
 		btnNewButton_1.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
 				TransformJsonMessage();
 				copyToClipBoard();
-				JLabel labelNotification = (JLabel) contentPane.getComponent(4);
+				JLabel labelNotification = (JLabel) contentPane.getComponent(2);
 				labelNotification.setText("Result has been copy to clip board");
 			}
 		});
-		btnNewButton_1.setBounds(10, 120, 145, 43);
+		btnNewButton_1.setBounds(10, 120, 414, 43);
 		contentPane.add(btnNewButton_1);
 		
 		JLabel lblPhacsccom = new JLabel("pha5@csc.com");
-		lblPhacsccom.setBounds(338, 17, 86, 31);
+		lblPhacsccom.setBounds(338, 219, 86, 31);
 		contentPane.add(lblPhacsccom);
 		
-		JLabel lblNotification = new JLabel("Notification");
-		lblNotification.setBounds(10, 174, 414, 76);
+		JLabel lblNotification = new JLabel("");
+		lblNotification.setBorder(new LineBorder(new Color(0, 0, 0)));
+		lblNotification.setBounds(10, 174, 293, 76);
 		contentPane.add(lblNotification);
+		
+		JPanel transformPane = new JPanel();
+		transformPane.setBorder(new LineBorder(new Color(0, 0, 0)));
+		transformPane.setBounds(10, 11, 414, 55);
+		contentPane.add(transformPane);
+				transformPane.setLayout(null);
+		
+				JButton btnNewButton = new JButton("Add transform rules");
+				btnNewButton.setBounds(0, 0, 139, 55);
+				transformPane.add(btnNewButton);
+				
+				JLabel lblCurrentTransformRule = new JLabel("New label");
+				lblCurrentTransformRule.setLabelFor(btnNewButton);
+				lblCurrentTransformRule.setBounds(141, 0, 273, 55);
+				transformPane.add(lblCurrentTransformRule);
+				
+				JPanel jsonPane = new JPanel();
+				jsonPane.setBorder(new LineBorder(new Color(0, 0, 0)));
+				jsonPane.setBounds(10, 66, 414, 50);
+				contentPane.add(jsonPane);
+						jsonPane.setLayout(null);
+				
+						JButton button = new JButton("Json");
+						button.setBounds(0, 0, 139, 50);
+						jsonPane.add(button);
+						
+						JLabel lblCurrentJsonFile = new JLabel("New label");
+						lblCurrentJsonFile.setLabelFor(button);
+						lblCurrentJsonFile.setBounds(138, 0, 276, 50);
+						jsonPane.add(lblCurrentJsonFile);
+						button.addActionListener(new ActionListener() {
+							public void actionPerformed(ActionEvent e) {
+								JLabel lblCurrentJsonFile = (JLabel)((JPanel)contentPane.getComponent(4)).getComponent(1);
+								clearNotification();
+								lblCurrentJsonFile.setText("");
+								jsonFile = fileChooser("Digesting message", "json");
+								
+								lblCurrentJsonFile.setText(jsonFile.getSelectedFile().getName());
+							}
+						});
+				btnNewButton.addActionListener(new ActionListener() {
+					public void actionPerformed(ActionEvent arg0) {
+						clearNotification();
+						JLabel lblCurrentJsonFile = (JLabel)((JPanel)contentPane.getComponent(3)).getComponent(1);
+						lblCurrentJsonFile.setText("");
+						transformRuleFile = fileChooser("Rule set", "xml");
+						lblCurrentJsonFile.setText(transformRuleFile.getSelectedFile().getName());
+					}
+				});
 	}
 
 	protected void copyToClipBoard() {
@@ -138,12 +170,14 @@ public class JsonTrans extends JFrame {
 	}
 
 	private void clearNotification() {
-		JLabel labelNotification = (JLabel) contentPane.getComponent(4);
+		JLabel labelNotification = (JLabel) contentPane.getComponent(2);
 		labelNotification.setText("");
 	}
 	
 	protected void TransformJsonMessage() {
 		// TODO Auto-generated method stub
+		jsonStringOnProcess = getFileContent(jsonFile);
+		transformRule = getFileContent(transformRuleFile);
 		getTransformRuleFromXML();
 		for (EditingPoint ep: editingList) {
 			jsonStringOnProcess = jsonEditByPath(jsonStringOnProcess,ep.path, ep.tagValue);
